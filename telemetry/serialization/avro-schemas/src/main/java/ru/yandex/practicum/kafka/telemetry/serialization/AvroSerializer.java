@@ -1,4 +1,4 @@
-package ru.practicum.avro;
+package ru.yandex.practicum.kafka.telemetry.serialization;
 
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumWriter;
@@ -31,3 +31,4 @@ public class AvroSerializer implements Serializer<SpecificRecordBase> {
         }
     }
 }
+

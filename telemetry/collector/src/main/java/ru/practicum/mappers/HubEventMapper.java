@@ -1,9 +1,11 @@
 package ru.practicum.mappers;
 
+import lombok.experimental.UtilityClass;
 import org.apache.avro.specific.SpecificRecordBase;
 import ru.practicum.event.hub.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
+@UtilityClass
 public class HubEventMapper {
 
     public static HubEventAvro toHubEventAvro(HubEvent hubEvent) {

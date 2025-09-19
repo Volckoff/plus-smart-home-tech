@@ -1,9 +1,11 @@
 package ru.practicum.mappers;
 
+import lombok.experimental.UtilityClass;
 import org.apache.avro.specific.SpecificRecordBase;
 import ru.practicum.event.sensor.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
+@UtilityClass
 public class SensorEventMapper {
 
     public static SensorEventAvro toSensorEventAvro(SensorEvent sensorEvent) {
