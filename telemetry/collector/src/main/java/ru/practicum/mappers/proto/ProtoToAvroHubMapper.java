@@ -81,6 +81,8 @@ public class ProtoToAvroHubMapper {
                 .setType(ActionTypeAvro.valueOf(a.getType().name()));
         if (a.hasValue()) {
             b.setValue(Integer.valueOf(a.getValue()));
+        } else {
+            b.setValue(null);
         }
         return b.build();
     }
