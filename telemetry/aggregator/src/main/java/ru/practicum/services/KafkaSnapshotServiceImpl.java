@@ -32,8 +32,9 @@ public class KafkaSnapshotServiceImpl implements SnapshotService {
         );
 
         SensorStateAvro oldState = snapshotAvro.getSensorsState().get(event.getId());
-        if (oldState != null && oldState.getTimestamp().isAfter(event.getTimestamp()) ||
-                oldState.getData().equals(event.getPayload())) {
+        if (oldState != null &&
+                (oldState.getTimestamp().isAfter(event.getTimestamp()) ||
+                        oldState.getData().equals(event.getPayload()))) {
             return Optional.empty();
         }
         SensorStateAvro newState = getNewSensorsSnapshotAvro(event);
