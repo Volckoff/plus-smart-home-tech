@@ -138,13 +138,6 @@ public class ScenarioAnalysisService {
     }
 
     private void executeActions(List<Action> actions, String scenarioName, String hubId) {
-        // Тест. Делаею задержку минимальной
-        try {
-            Thread.sleep(100); // адержка 100ms, для решения проблемы с таймаутом
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
         for (Action action : actions) {
             log.info("Executing action: device={}, type={}, value={}",
                     action.getSensor().getId(), action.getType(), action.getValue());

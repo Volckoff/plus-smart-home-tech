@@ -12,7 +12,7 @@ kafka:
     consumer-client-id-config: aggregator-consumer-1
     consumer-key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     consumer-value-deserializer: ru.yandex.practicum.kafka.telemetry.serialization.SensorEventDeserializer
-    consume-attempt-timeout: 500
+    consume-attempt-timeout: 100
 
     # Topics
     sensor-events-topic: telemetry.sensors.v1

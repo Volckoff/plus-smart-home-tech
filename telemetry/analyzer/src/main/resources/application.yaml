@@ -25,7 +25,7 @@ kafka:
     hub-event-group-id: analyzer-hub-consumer-group
     auto-offset-reset: earliest
     enable-auto-commit: false
-    consume-timeout: 1000
+    consume-timeout: 500
     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     value-deserializers:
       sensors-snapshot: ru.yandex.practicum.kafka.telemetry.serialization.SensorsSnapshotDeserializer
