@@ -68,8 +68,8 @@ public class ScenarioAddedHandler implements HubEventHandler {
         Map<String, Sensor> sensorMap = sensors.stream()
                 .collect(Collectors.toMap(Sensor::getId, Function.identity()));
 
-        actionRepository.deleteByScenario(scenario);
-        conditionRepository.deleteByScenario(scenario);
+        actionRepository.deleteByScenario(scenario.getId());
+        conditionRepository.deleteByScenario(scenario.getId());
 
         for (DeviceActionAvro actionAvro : scenarioAddedEvent.getActions()) {
             Sensor sensor = sensorMap.get(actionAvro.getSensorId());
@@ -77,8 +77,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
                 Action action = Action.builder()
                         .type(actionAvro.getType())
                         .value(actionAvro.getValue())
-                        .scenario(scenario)
-                        .sensor(sensor)
+                        .scenarioSensorMap(Map.of(scenario, sensor.getId()))
                         .build();
                 actionRepository.save(action);
             } else {
@@ -94,8 +93,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
                         .type(conditionAvro.getType())
                         .operation(conditionAvro.getOperation())
                         .value(conditionValue)
-                        .scenario(scenario)
-                        .sensor(sensor)
+                        .scenarioSensorMap(Map.of(scenario, sensor.getId()))
                         .build();
                 conditionRepository.save(condition);
             } else {

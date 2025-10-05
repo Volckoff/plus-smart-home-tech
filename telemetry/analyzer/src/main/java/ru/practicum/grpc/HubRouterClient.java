@@ -22,8 +22,9 @@ public class HubRouterClient {
 
     public void sendDeviceAction(String hubId, String scenarioName, Action action) {
         try {
+            String sensorId = action.getScenarioSensorMap().values().iterator().next();
             DeviceActionProto.Builder actionBuilder = DeviceActionProto.newBuilder()
-                    .setSensorId(action.getSensor().getId())
+                    .setSensorId(sensorId)
                     .setType(ActionTypeProto.valueOf(action.getType().toString()));
             if (action.getValue() != null) {
                 actionBuilder.setValue(action.getValue());
@@ -41,7 +42,7 @@ public class HubRouterClient {
                     .build();
 
             log.info("Sending device action to hub {}: device={}, type={}, value={}",
-                    hubId, action.getSensor().getId(), action.getType(), action.getValue());
+                    hubId, sensorId, action.getType(), action.getValue());
 
             hubRouterStub.handleDeviceAction(request);
 

@@ -8,11 +8,12 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 
+import java.util.Map;
+
 import static lombok.AccessLevel.PRIVATE;
 
 @Entity
 @Table(name = "actions")
-@SecondaryTable(name = "scenario_actions", pkJoinColumns = @PrimaryKeyJoinColumn(name = "action_id"))
 @Data
 @Builder
 @NoArgsConstructor
@@ -31,11 +32,10 @@ public class Action {
     @Column(name = "action_value")
     Integer value;
 
-    @ManyToOne
-    @JoinColumn(name = "scenario_id", table = "scenario_actions")
-    Scenario scenario;
-
-    @ManyToOne
-    @JoinColumn(name = "sensor_id", table = "scenario_actions")
-    Sensor sensor;
+    @ElementCollection
+    @CollectionTable(name = "scenario_actions", 
+                    joinColumns = @JoinColumn(name = "action_id"))
+    @MapKeyJoinColumn(name = "scenario_id")
+    @Column(name = "sensor_id")
+    Map<Scenario, String> scenarioSensorMap;
 }

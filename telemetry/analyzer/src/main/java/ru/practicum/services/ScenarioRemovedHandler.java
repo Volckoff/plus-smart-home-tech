@@ -29,8 +29,8 @@ public class ScenarioRemovedHandler implements HubEventHandler {
         ScenarioRemovedEventAvro scenarioRemovedEvent = (ScenarioRemovedEventAvro) hubEventAvro.getPayload();
         Optional<Scenario> scenario = scenarioRepository.findByHubIdAndName(hubEventAvro.getHubId(), scenarioRemovedEvent.getName());
         if (scenario.isPresent()) {
-            actionRepository.deleteByScenario(scenario.get());
-            conditionRepository.deleteByScenario(scenario.get());
+            actionRepository.deleteByScenario(scenario.get().getId());
+            conditionRepository.deleteByScenario(scenario.get().getId());
             scenarioRepository.delete(scenario.get());
         }
     }

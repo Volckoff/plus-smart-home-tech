@@ -3,6 +3,7 @@ package ru.practicum.services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.grpc.HubRouterClient;
 import ru.practicum.model.Action;
 import ru.practicum.model.Condition;
@@ -27,6 +28,7 @@ public class ScenarioAnalysisService {
     private final ActionRepository actionRepository;
     private final HubRouterClient hubRouterClient;
 
+    @Transactional(readOnly = true)
     public void analyzeSnapshot(SensorsSnapshotAvro snapshot) {
         String hubId = snapshot.getHubId();
         log.info("Analyzing scenarios for hub: {}", hubId);
@@ -43,10 +45,16 @@ public class ScenarioAnalysisService {
         List<Action> allActions = actionRepository.findAllByHubId(hubId);
 
         Map<Scenario, List<Condition>> conditionsByScenario = allConditions.stream()
-                .collect(Collectors.groupingBy(Condition::getScenario));
+                .flatMap(condition -> condition.getScenarioSensorMap().keySet().stream()
+                        .map(scenario -> Map.entry(scenario, condition)))
+                .collect(Collectors.groupingBy(Map.Entry::getKey, 
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
         Map<Scenario, List<Action>> actionsByScenario = allActions.stream()
-                .collect(Collectors.groupingBy(Action::getScenario));
+                .flatMap(action -> action.getScenarioSensorMap().keySet().stream()
+                        .map(scenario -> Map.entry(scenario, action)))
+                .collect(Collectors.groupingBy(Map.Entry::getKey, 
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
         for (Scenario scenario : scenarios) {
             List<Condition> conditions = conditionsByScenario.getOrDefault(scenario, Collections.emptyList());
@@ -83,10 +91,11 @@ public class ScenarioAnalysisService {
     }
 
     private boolean checkCondition(Condition condition, SensorsSnapshotAvro snapshot) {
-        Integer sensorValue = findSensorValue(condition.getSensor().getId(), snapshot);
+        String sensorId = condition.getScenarioSensorMap().values().iterator().next();
+        Integer sensorValue = findSensorValue(sensorId, snapshot);
 
         if (sensorValue == null) {
-            log.warn("Sensor {} not found in snapshot", condition.getSensor().getId());
+            log.warn("Sensor {} not found in snapshot", sensorId);
             return false;
         }
 
@@ -97,7 +106,7 @@ public class ScenarioAnalysisService {
         };
 
         log.info("Condition check: sensor {} {} {} = {} (actual: {}, expected: {})",
-                condition.getSensor().getId(), condition.getOperation(), condition.getValue(), result, sensorValue, condition.getValue());
+                sensorId, condition.getOperation(), condition.getValue(), result, sensorValue, condition.getValue());
         return result;
     }
 
@@ -139,8 +148,9 @@ public class ScenarioAnalysisService {
 
     private void executeActions(List<Action> actions, String scenarioName, String hubId) {
         for (Action action : actions) {
+            String sensorId = action.getScenarioSensorMap().values().iterator().next();
             log.info("Executing action: device={}, type={}, value={}",
-                    action.getSensor().getId(), action.getType(), action.getValue());
+                    sensorId, action.getType(), action.getValue());
 
             hubRouterClient.sendDeviceAction(hubId, scenarioName, action);
         }
