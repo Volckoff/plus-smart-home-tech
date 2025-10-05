@@ -8,15 +8,11 @@ import ru.practicum.grpc.HubRouterClient;
 import ru.practicum.model.Action;
 import ru.practicum.model.Condition;
 import ru.practicum.model.Scenario;
-import ru.practicum.repository.ActionRepository;
-import ru.practicum.repository.ConditionRepository;
 import ru.practicum.repository.ScenarioRepository;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,8 +20,6 @@ import java.util.stream.Collectors;
 public class ScenarioAnalysisService {
 
     private final ScenarioRepository scenarioRepository;
-    private final ConditionRepository conditionRepository;
-    private final ActionRepository actionRepository;
     private final HubRouterClient hubRouterClient;
 
     @Transactional(readOnly = true)
@@ -41,57 +35,41 @@ public class ScenarioAnalysisService {
             return;
         }
 
-        List<Condition> allConditions = conditionRepository.findAllByHubId(hubId);
-        List<Action> allActions = actionRepository.findAllByHubId(hubId);
-
-        Map<Scenario, List<Condition>> conditionsByScenario = allConditions.stream()
-                .flatMap(condition -> condition.getScenarioSensorMap().keySet().stream()
-                        .map(scenario -> Map.entry(scenario, condition)))
-                .collect(Collectors.groupingBy(Map.Entry::getKey, 
-                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
-
-        Map<Scenario, List<Action>> actionsByScenario = allActions.stream()
-                .flatMap(action -> action.getScenarioSensorMap().keySet().stream()
-                        .map(scenario -> Map.entry(scenario, action)))
-                .collect(Collectors.groupingBy(Map.Entry::getKey, 
-                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
-
         for (Scenario scenario : scenarios) {
-            List<Condition> conditions = conditionsByScenario.getOrDefault(scenario, Collections.emptyList());
-            List<Action> actions = actionsByScenario.getOrDefault(scenario, Collections.emptyList());
-            analyzeScenario(scenario, conditions, actions, snapshot);
+            analyzeScenario(scenario, snapshot);
         }
     }
 
-    private void analyzeScenario(Scenario scenario, List<Condition> conditions, List<Action> actions, SensorsSnapshotAvro snapshot) {
+    private void analyzeScenario(Scenario scenario, SensorsSnapshotAvro snapshot) {
         log.info("Analyzing scenario: {} for hub: {}", scenario.getName(), scenario.getHubId());
 
-        log.info("Scenario conditions: {}", conditions.size());
-        log.info("Scenario actions: {}", actions.size());
+        log.info("Scenario conditions: {}", scenario.getConditions().size());
+        log.info("Scenario actions: {}", scenario.getActions().size());
 
-        boolean allConditionsMet = checkAllConditions(conditions, snapshot);
+        boolean allConditionsMet = checkAllConditions(scenario.getConditions(), snapshot);
         if (allConditionsMet) {
             log.info("All conditions met for scenario: {}, executing actions", scenario.getName());
-            executeActions(actions, scenario.getName(), scenario.getHubId());
+            executeActions(scenario.getActions(), scenario.getName(), scenario.getHubId());
         } else {
             log.info("Conditions not met for scenario: {}", scenario.getName());
         }
     }
 
-    private boolean checkAllConditions(List<Condition> conditions, SensorsSnapshotAvro snapshot) {
+    private boolean checkAllConditions(Map<String, Condition> conditions, SensorsSnapshotAvro snapshot) {
         if (conditions.isEmpty()) {
             return false;
         }
-        for (Condition condition : conditions) {
-            if (!checkCondition(condition, snapshot)) {
+        for (Map.Entry<String, Condition> entry : conditions.entrySet()) {
+            String sensorId = entry.getKey();
+            Condition condition = entry.getValue();
+            if (!checkCondition(sensorId, condition, snapshot)) {
                 return false;
             }
         }
         return true;
     }
 
-    private boolean checkCondition(Condition condition, SensorsSnapshotAvro snapshot) {
-        String sensorId = condition.getScenarioSensorMap().values().iterator().next();
+    private boolean checkCondition(String sensorId, Condition condition, SensorsSnapshotAvro snapshot) {
         Integer sensorValue = findSensorValue(sensorId, snapshot);
 
         if (sensorValue == null) {
@@ -146,13 +124,14 @@ public class ScenarioAnalysisService {
         return value;
     }
 
-    private void executeActions(List<Action> actions, String scenarioName, String hubId) {
-        for (Action action : actions) {
-            String sensorId = action.getScenarioSensorMap().values().iterator().next();
+    private void executeActions(Map<String, Action> actions, String scenarioName, String hubId) {
+        for (Map.Entry<String, Action> entry : actions.entrySet()) {
+            String sensorId = entry.getKey();
+            Action action = entry.getValue();
             log.info("Executing action: device={}, type={}, value={}",
                     sensorId, action.getType(), action.getValue());
 
-            hubRouterClient.sendDeviceAction(hubId, scenarioName, action);
+            hubRouterClient.sendDeviceAction(hubId, scenarioName, sensorId, action);
         }
     }
 }

@@ -29,19 +29,19 @@ action_value INTEGER
 
 -- создаём таблицу scenario_conditions, связывающую сценарий, датчик и условие активации сценария
 CREATE TABLE IF NOT EXISTS scenario_conditions (
-scenario_id BIGINT REFERENCES scenarios(id),
-sensor_id VARCHAR REFERENCES sensors(id),
-condition_id BIGINT REFERENCES conditions(id),
-PRIMARY KEY (scenario_id, sensor_id, condition_id)
-    );
+    scenario_id BIGINT REFERENCES scenarios(id),
+    sensor_id VARCHAR REFERENCES sensors(id),
+    condition_id BIGINT REFERENCES conditions(id),
+    PRIMARY KEY (scenario_id, sensor_id, condition_id)
+);
 
 -- создаём таблицу scenario_actions, связывающую сценарий, датчик и действие, которое нужно выполнить при активации сценария
 CREATE TABLE IF NOT EXISTS scenario_actions (
-scenario_id BIGINT REFERENCES scenarios(id),
-sensor_id VARCHAR REFERENCES sensors(id),
-action_id BIGINT REFERENCES actions(id),
-PRIMARY KEY (scenario_id, sensor_id, action_id)
-    );
+    scenario_id BIGINT REFERENCES scenarios(id),
+    sensor_id VARCHAR REFERENCES sensors(id),
+    action_id BIGINT REFERENCES actions(id),
+    PRIMARY KEY (scenario_id, sensor_id, action_id)
+);
 
 -- создаём функцию для проверки, что связываемые сценарий и датчик работают с одним и тем же хабом
 CREATE OR REPLACE FUNCTION check_hub_id()

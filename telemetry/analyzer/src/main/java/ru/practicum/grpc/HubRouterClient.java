@@ -20,9 +20,8 @@ public class HubRouterClient {
     @GrpcClient("hub-router")
     private HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouterStub;
 
-    public void sendDeviceAction(String hubId, String scenarioName, Action action) {
+    public void sendDeviceAction(String hubId, String scenarioName, String sensorId, Action action) {
         try {
-            String sensorId = action.getScenarioSensorMap().values().iterator().next();
             DeviceActionProto.Builder actionBuilder = DeviceActionProto.newBuilder()
                     .setSensorId(sensorId)
                     .setType(ActionTypeProto.valueOf(action.getType().toString()));

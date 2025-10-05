@@ -9,8 +9,6 @@ import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 
-import java.util.Map;
-
 import static lombok.AccessLevel.PRIVATE;
 
 @Entity
@@ -36,11 +34,4 @@ public class Condition {
 
     @Column(name = "condition_value")
     Integer value;
-
-    @ElementCollection
-    @CollectionTable(name = "scenario_conditions", 
-                    joinColumns = @JoinColumn(name = "condition_id"))
-    @MapKeyJoinColumn(name = "scenario_id")
-    @Column(name = "sensor_id")
-    Map<Scenario, String> scenarioSensorMap;
 }

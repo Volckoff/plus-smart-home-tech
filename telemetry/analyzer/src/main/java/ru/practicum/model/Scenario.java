@@ -7,6 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static lombok.AccessLevel.PRIVATE;
 
 @Entity
@@ -27,4 +30,24 @@ public class Scenario {
 
     @Column(name = "name", nullable = false)
     String name;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKeyColumn(table = "scenario_conditions", name = "sensor_id")
+    @JoinTable(
+            name = "scenario_conditions",
+            joinColumns = @JoinColumn(name = "scenario_id"),
+            inverseJoinColumns = @JoinColumn(name = "condition_id")
+    )
+    @Builder.Default
+    Map<String, Condition> conditions = new HashMap<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKeyColumn(table = "scenario_actions", name = "sensor_id")
+    @JoinTable(
+            name = "scenario_actions",
+            joinColumns = @JoinColumn(name = "scenario_id"),
+            inverseJoinColumns = @JoinColumn(name = "action_id")
+    )
+    @Builder.Default
+    Map<String, Action> actions = new HashMap<>();
 }

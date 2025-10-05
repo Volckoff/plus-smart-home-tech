@@ -55,7 +55,8 @@ public class ScenarioAddedHandler implements HubEventHandler {
         return scenarioRepository.save(newScenario);
     }
 
-    private void processActionsAndConditions(HubEventAvro hubEvent, ScenarioAddedEventAvro scenarioAddedEvent, Scenario scenario) {
+    private void processActionsAndConditions(HubEventAvro hubEvent, ScenarioAddedEventAvro scenarioAddedEvent,
+                                             Scenario scenario) {
         Set<String> allSensorIds = new HashSet<>();
         allSensorIds.addAll(scenarioAddedEvent.getActions().stream()
                 .map(DeviceActionAvro::getSensorId)
@@ -68,8 +69,8 @@ public class ScenarioAddedHandler implements HubEventHandler {
         Map<String, Sensor> sensorMap = sensors.stream()
                 .collect(Collectors.toMap(Sensor::getId, Function.identity()));
 
-        actionRepository.deleteByScenario(scenario.getId());
-        conditionRepository.deleteByScenario(scenario.getId());
+        scenario.getConditions().clear();
+        scenario.getActions().clear();
 
         for (DeviceActionAvro actionAvro : scenarioAddedEvent.getActions()) {
             Sensor sensor = sensorMap.get(actionAvro.getSensorId());
@@ -77,9 +78,9 @@ public class ScenarioAddedHandler implements HubEventHandler {
                 Action action = Action.builder()
                         .type(actionAvro.getType())
                         .value(actionAvro.getValue())
-                        .scenarioSensorMap(Map.of(scenario, sensor.getId()))
                         .build();
-                actionRepository.save(action);
+                action = actionRepository.save(action);
+                scenario.getActions().put(sensor.getId(), action);
             } else {
                 log.warn("Sensor {} not found for action in scenario {}", actionAvro.getSensorId(), scenario.getName());
             }
@@ -93,13 +94,16 @@ public class ScenarioAddedHandler implements HubEventHandler {
                         .type(conditionAvro.getType())
                         .operation(conditionAvro.getOperation())
                         .value(conditionValue)
-                        .scenarioSensorMap(Map.of(scenario, sensor.getId()))
                         .build();
-                conditionRepository.save(condition);
+                condition = conditionRepository.save(condition);
+                scenario.getConditions().put(sensor.getId(), condition);
             } else {
-                log.warn("Sensor {} not found for condition in scenario {}", conditionAvro.getSensorId(), scenario.getName());
+                log.warn("Sensor {} not found for condition in scenario {}", conditionAvro.getSensorId(),
+                        scenario.getName());
             }
         }
+
+        scenarioRepository.save(scenario);
     }
 
     @Override
