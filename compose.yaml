@@ -44,6 +44,7 @@ services:
       - "5432:5432"
     volumes:
       - ./telemetry/analyzer/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
@@ -52,4 +53,4 @@ services:
     restart: unless-stopped
 
 volumes:
- postgres_data:
+  postgres_data:
