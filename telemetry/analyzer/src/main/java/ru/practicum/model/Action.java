@@ -1,10 +1,7 @@
 package ru.practicum.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 
@@ -12,7 +9,8 @@ import static lombok.AccessLevel.PRIVATE;
 
 @Entity
 @Table(name = "actions")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
