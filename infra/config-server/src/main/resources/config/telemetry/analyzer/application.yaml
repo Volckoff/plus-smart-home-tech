@@ -2,14 +2,15 @@ spring:
   application:
     name: analyzer
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/analyzer_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
     driver-class-name: org.postgresql.Driver
-    username: ${SPRING_DATASOURCE_USERNAME:user}
-    password: ${SPRING_DATASOURCE_PASSWORD:password}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
+      default_schema: analyzer
     sql:
       init:
         mode: always

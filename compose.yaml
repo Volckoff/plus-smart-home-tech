@@ -37,9 +37,9 @@ services:
   postgres:
     image: postgres:16.1
     environment:
-      POSTGRES_DB: analyzer_db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     healthcheck:
