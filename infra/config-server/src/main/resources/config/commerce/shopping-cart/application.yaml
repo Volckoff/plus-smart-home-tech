@@ -1,0 +1,62 @@
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+      default_schema: shopping_cart
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: always
+  output:
+    ansi:
+      enabled: ALWAYS
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+
+logging:
+  level:
+    "org.springframework.orm.jpa": INFO
+    "org.springframework.transaction": INFO
+    "org.springframework.transaction.interceptor": TRACE
+    "org.springframework.orm.jpa.JpaTransactionManager": DEBUG
+    "org.hibernate.SQL": DEBUG
+    "org.hibernate.orm.jdbc.bind": trace
+    "ru.practicum.clients.warehouse": DEBUG
+    "io.github.resilience4j": DEBUG
+
+server:
+  port: 0
+
+# Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 50
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+    instances:
+      warehouse:
+        slidingWindowSize: 10
+        failureRateThreshold: 60
+        waitDurationInOpenState: 15000
+        permittedNumberOfCallsInHalfOpenState: 2
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - java.io.IOException
+          - org.springframework.web.client.ResourceAccessException
+          - feign.FeignException

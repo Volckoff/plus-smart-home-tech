@@ -1,3 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS analyzer;
+SET SCHEMA 'analyzer';
+
 -- создаём таблицу scenarios
 CREATE TABLE IF NOT EXISTS scenarios (
 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
