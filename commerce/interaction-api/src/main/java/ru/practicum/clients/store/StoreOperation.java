@@ -10,6 +10,8 @@ import ru.practicum.dto.ProductCategory;
 import ru.practicum.dto.ProductDto;
 import ru.practicum.dto.SetProductQuantityStateRequest;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface StoreOperation {
@@ -20,6 +22,9 @@ public interface StoreOperation {
 
     @GetMapping("/{productId}")
     ProductDto getProduct(@PathVariable UUID productId);
+
+    @PostMapping("/byIds")
+    List<ProductDto> getProductByIds(@RequestBody Set<UUID> productIds);
 
     @PutMapping
     ProductDto createNewProduct(@RequestBody @Valid ProductDto productDto);

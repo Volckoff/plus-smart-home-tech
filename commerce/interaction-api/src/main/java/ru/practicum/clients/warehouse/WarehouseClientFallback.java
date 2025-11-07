@@ -4,6 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.dto.*;
 
+import java.util.Map;
+import java.util.UUID;
+
 @Slf4j
 @Component
 public class WarehouseClientFallback implements WarehouseOperation {
@@ -43,5 +46,29 @@ public class WarehouseClientFallback implements WarehouseOperation {
                 "Opening hours: to be confirmed",
                 "No further information available"
         );
+    }
+
+    @Override
+    public void shippedToDelivery(ShippedToDeliveryRequest request) {
+        log.warn("Warehouse service is unavailable. Fallback: ignoring shippedToDelivery request for order: {}", 
+                request.getOrderId());
+    }
+
+    @Override
+    public BookedProductsDto assemblyProductsForOrder(AssemblyProductsForOrderRequest request) {
+        log.warn("Warehouse service is unavailable. Fallback: returning default BookedProductsDto for order: {}", 
+                request.getOrderId());
+        
+        return new BookedProductsDto(
+                0.0,
+                0.0,
+                false
+        );
+    }
+
+    @Override
+    public void acceptReturn(Map<UUID, Long> products) {
+        log.warn("Warehouse service is unavailable. Fallback: ignoring acceptReturn request for {} products", 
+                products.size());
     }
 }

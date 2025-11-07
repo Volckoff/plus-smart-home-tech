@@ -10,3 +10,17 @@ width DECIMAL NOT NULL,
 height DECIMAL NOT NULL,
 depth DECIMAL NOT NULL
     );
+
+CREATE TABLE IF NOT EXISTS booking (
+booking_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+order_id UUID NOT NULL,
+delivery_id UUID
+    );
+
+CREATE TABLE IF NOT EXISTS booking_products (
+booking_id UUID NOT NULL,
+product_id UUID NOT NULL,
+quantity INTEGER NOT NULL,
+CONSTRAINT booking_products_pk PRIMARY KEY (booking_id, product_id),
+CONSTRAINT booking_products_fk FOREIGN KEY (booking_id) REFERENCES booking(booking_id) ON DELETE CASCADE
+    );
