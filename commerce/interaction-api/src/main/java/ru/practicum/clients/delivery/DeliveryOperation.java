@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.DeliveryDto;
 import ru.practicum.dto.OrderDto;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface DeliveryOperation {
@@ -23,5 +24,5 @@ public interface DeliveryOperation {
     void deliveryFailed(@RequestBody @NotNull UUID orderId);
 
     @PostMapping("/cost")
-    Double deliveryCost(@RequestBody @Valid OrderDto orderDto);
+    BigDecimal deliveryCost(@RequestBody @Valid OrderDto orderDto);
 }

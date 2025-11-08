@@ -58,9 +58,9 @@ public class OrderFacadeImpl implements OrderFacade {
         OrderDto orderDto = orderMapper.map(order);
         
         double productCost = paymentClient.getProductCost(orderDto);
-        double deliveryCost = deliveryClient.deliveryCost(orderDto);
+        BigDecimal deliveryCost = deliveryClient.deliveryCost(orderDto);
         
-        order.setDeliveryPrice(BigDecimal.valueOf(deliveryCost));
+        order.setDeliveryPrice(deliveryCost);
         order.setProductPrice(BigDecimal.valueOf(productCost));
         
         log.info("Order after setting productPrice: {}", order);
@@ -112,7 +112,7 @@ public class OrderFacadeImpl implements OrderFacade {
     @Override
     public OrderDto calculateDeliveryPrice(UUID orderId) {
         Order order = orderService.getOrderById(orderId);
-        double deliveryCost = deliveryClient.deliveryCost(orderMapper.map(order));
+        BigDecimal deliveryCost = deliveryClient.deliveryCost(orderMapper.map(order));
         return orderMapper.map(orderService.setDeliveryPrice(orderId, deliveryCost));
     }
 

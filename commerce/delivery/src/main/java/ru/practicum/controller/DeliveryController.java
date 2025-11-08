@@ -10,6 +10,7 @@ import ru.practicum.dto.DeliveryDto;
 import ru.practicum.dto.OrderDto;
 import ru.practicum.service.DeliveryService;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Validated
@@ -46,10 +47,12 @@ public class DeliveryController implements DeliveryClient {
 
     @Override
     @PostMapping("/cost")
-    public Double deliveryCost(@RequestBody @Valid OrderDto orderDto) {
+    public BigDecimal deliveryCost(@RequestBody @Valid OrderDto orderDto) {
         return deliveryService.deliveryCost(orderDto);
     }
 }
+
+
 
 
 

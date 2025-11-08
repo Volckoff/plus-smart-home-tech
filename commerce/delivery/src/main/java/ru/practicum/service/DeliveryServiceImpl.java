@@ -18,6 +18,8 @@ import ru.practicum.model.Delivery;
 import ru.practicum.repository.DeliveryRepository;
 import ru.practicum.util.DeliveryUtil;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.UUID;
 
 @Slf4j
@@ -70,40 +72,67 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
-    public Double deliveryCost(OrderDto orderDto) {
-        Delivery delivery = getDeliveryByOrderId(orderDto.getOrderId());
-        log.info("Delivery for calc cost: {}", delivery);
+    public BigDecimal deliveryCost(OrderDto orderDto) {
+        UUID orderId = orderDto.getOrderId();
+        log.info("Starting delivery cost calculation for orderId: {}", orderId);
+        
+        Delivery delivery = getDeliveryByOrderId(orderId);
+        log.info("Delivery found for orderId {}: {}", orderId, delivery);
 
-        double cost = DeliveryUtil.BASE_DELIVERY_PRICE;
+        BigDecimal cost = DeliveryUtil.BASE_DELIVERY_PRICE;
+        log.info("Base delivery price for orderId {}: {}", orderId, cost);
         
         // Умножаем базовую стоимость на коэффициент адреса склада и складываем с базовой стоимостью
-        double addressMultiplier = getCoefByFromAddress(delivery.getFromAddress());
-        cost += DeliveryUtil.BASE_DELIVERY_PRICE * addressMultiplier;
+        BigDecimal addressMultiplier = getCoefByFromAddress(delivery.getFromAddress());
+        log.info("Address multiplier for orderId {}: {}", orderId, addressMultiplier);
+        BigDecimal addressCost = DeliveryUtil.BASE_DELIVERY_PRICE.multiply(addressMultiplier);
+        cost = cost.add(addressCost);
+        log.info("Cost after address multiplier for orderId {}: {}", orderId, cost);
 
         // Если хрупкий, умножаем сумму на 0.2 и складываем
         if (orderDto.getFragile() != null && orderDto.getFragile()) {
-            cost += cost * 0.2;
+            BigDecimal fragileMultiplier = BigDecimal.valueOf(0.2);
+            BigDecimal fragileCost = cost.multiply(fragileMultiplier);
+            cost = cost.add(fragileCost);
+            log.info("Fragile item detected for orderId {}, added cost: {}, total cost: {}", 
+                    orderId, fragileCost, cost);
         }
 
         // Добавляем вес, умноженный на 0.3
         if (orderDto.getDeliveryWeight() != null) {
-            cost += orderDto.getDeliveryWeight() * 0.3;
+            BigDecimal weightMultiplier = BigDecimal.valueOf(0.3);
+            BigDecimal weightCost = BigDecimal.valueOf(orderDto.getDeliveryWeight())
+                    .multiply(weightMultiplier);
+            cost = cost.add(weightCost);
+            log.info("Weight cost for orderId {}: weight={}, cost added: {}, total cost: {}", 
+                    orderId, orderDto.getDeliveryWeight(), weightCost, cost);
         }
 
         // Добавляем объём, умноженный на 0.2
         if (orderDto.getDeliveryVolume() != null) {
-            cost += orderDto.getDeliveryVolume() * 0.2;
+            BigDecimal volumeMultiplier = BigDecimal.valueOf(0.2);
+            BigDecimal volumeCost = BigDecimal.valueOf(orderDto.getDeliveryVolume())
+                    .multiply(volumeMultiplier);
+            cost = cost.add(volumeCost);
+            log.info("Volume cost for orderId {}: volume={}, cost added: {}, total cost: {}", 
+                    orderId, orderDto.getDeliveryVolume(), volumeCost, cost);
         }
 
         // Если улица доставки не совпадает с улицей склада, умножаем сумму на 0.2 и складываем
         if (!delivery.getFromAddress().getStreet().equals(delivery.getToAddress().getStreet())) {
-            cost += cost * 0.2;
+            BigDecimal streetMultiplier = BigDecimal.valueOf(0.2);
+            BigDecimal streetCost = cost.multiply(streetMultiplier);
+            cost = cost.add(streetCost);
+            log.info("Different street detected for orderId {}, added cost: {}, total cost: {}", 
+                    orderId, streetCost, cost);
         }
 
-        return cost;
+        BigDecimal finalCost = cost.setScale(2, RoundingMode.HALF_UP);
+        log.info("Final delivery cost calculated for orderId {}: {}", orderId, finalCost);
+        return finalCost;
     }
 
-    private double getCoefByFromAddress(Address address) {
+    private BigDecimal getCoefByFromAddress(Address address) {
         if (address == null || address.getStreet() == null) {
             return DeliveryUtil.BASE_ADDRESS_COEF;
         }
