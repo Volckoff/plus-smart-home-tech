@@ -10,6 +10,8 @@ import ru.practicum.clients.store.StoreOperation;
 import ru.practicum.dto.*;
 import ru.practicum.service.ShoppingStoreService;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -28,6 +30,12 @@ public class ShoppingStoreController implements StoreOperation {
     @Override
     public ProductDto getProduct(@PathVariable UUID productId) {
         return shoppingStoreService.getProductById(productId);
+    }
+
+    @Override
+    @PostMapping("/byIds")
+    public List<ProductDto> getProductByIds(@RequestBody Set<UUID> productIds) {
+        return shoppingStoreService.getProductByIds(productIds);
     }
 
     @Override

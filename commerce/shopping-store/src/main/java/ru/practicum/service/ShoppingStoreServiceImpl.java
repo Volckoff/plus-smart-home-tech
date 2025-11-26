@@ -10,6 +10,8 @@ import ru.practicum.mapper.ProductMapper;
 import ru.practicum.model.Product;
 import ru.practicum.repository.ProductRepository;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -27,6 +29,14 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     @Override
     public ProductDto getProductById(UUID productId) {
         return productMapper.map(getProduct(productId));
+    }
+
+    @Override
+    public List<ProductDto> getProductByIds(Set<UUID> productIds) {
+        return productRepository.findAllById(productIds)
+                .stream()
+                .map(productMapper::map)
+                .toList();
     }
 
     @Override
